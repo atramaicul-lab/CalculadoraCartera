@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Migración a 3 fondos · Lucía G. Regueiro</title>
+<meta name="author" content="Lucía G. Regueiro">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#16203A; --ink-soft:#48536B; --line:#E4E8F0; --line-2:#EEF1F6;
+    --page:#F6F7FB; --surface:#FFFFFF; --surface-2:#FBFCFE;
+    --indigo:#534AB7; --coral:#D85A30; --green:#2F9E6B; --amber:#C8861A;
+    --pos-bg:#E4F5EC; --warn-bg:#FBF1DB;
+    --radius:14px; --shadow:0 1px 2px rgba(22,32,58,.05),0 8px 24px rgba(22,32,58,.06);
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--page);color:var(--ink);font-family:'Inter',system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif;margin:0;letter-spacing:-.01em;line-height:1.15}
+  header.top{position:sticky;top:0;z-index:20;background:rgba(246,247,251,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top-in{max-width:900px;margin:0 auto;padding:14px 20px}
+  .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--indigo);font-weight:600}
+  .top-in h1{font-size:19px;margin-top:2px}
+  .by{font-size:12px;color:var(--ink-soft)}
+  main{max-width:900px;margin:0 auto;padding:24px 20px 60px}
+  .hero p{max-width:62ch;color:var(--ink-soft);font-size:15px;margin:8px 0 0}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin:18px 0}
+  .panel h2{font-size:17px;display:flex;align-items:center;gap:10px}
+  .panel h2 .idx{font:600 12px var(--mono);color:var(--indigo);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+  .sub{color:var(--ink-soft);font-size:13.5px;margin:6px 0 16px}
+  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:520px}
+  th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line-2);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  thead th{font:600 11.5px 'Space Grotesk',sans-serif;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-soft);background:var(--surface-2)}
+  tbody tr:last-child td{border-bottom:0}
+  td.n{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  tfoot td{font-weight:600;background:var(--surface-2);border-top:1px solid var(--line)}
+  input.cell{width:100%;min-width:120px;border:1px solid var(--line-2);background:var(--surface-2);text-align:right;font:500 14px var(--mono);color:var(--ink);border-radius:7px;padding:8px 9px}
+  input.cell:focus{outline:0;border-color:var(--indigo);background:#fff;box-shadow:0 0 0 3px rgba(83,74,183,.12)}
+  .grid-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 4px}
+  .kpi{background:var(--surface-2);border:1px solid var(--line-2);border-radius:10px;padding:13px 14px}
+  .kpi .k{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);font-weight:600}
+  .kpi .v{font:600 21px var(--mono);margin-top:4px}
+  .dest{border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0;background:var(--surface-2)}
+  .dest h3{font-size:15px;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+  .dest h3 .tag{font:600 11px var(--mono);color:#fff;padding:2px 8px;border-radius:999px}
+  .dest .isin{font:500 12px var(--mono);color:var(--ink-soft)}
+  .dest ul{margin:12px 0 0;padding:0;list-style:none}
+  .dest li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px dashed var(--line);font-size:14px}
+  .dest li:first-child{border-top:0}
+  .dest li b{font-family:var(--mono)}
+  .dest li.stay{color:var(--green)} .dest li.total{border-top:1px solid var(--line);font-weight:600}
+  .swatch{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:7px;vertical-align:middle}
+  .close-note{font-size:13px;color:var(--ink-soft);margin-top:6px}
+  .callout{border-left:3px solid var(--green);background:var(--pos-bg);padding:11px 14px;border-radius:0 8px 8px 0;font-size:13px;margin:10px 0}
+  .callout.warn{border-color:var(--amber);background:var(--warn-bg)}
+  .chart-box{position:relative;width:100%;height:260px;margin-top:12px}
+  footer{max-width:900px;margin:0 auto;padding:26px 20px 48px;border-top:1px solid var(--line);color:var(--ink-soft);font-size:13px}
+  footer .sig{font:600 14px 'Space Grotesk',sans-serif;color:var(--ink)}
+  @media (max-width:600px){main{padding:18px 14px}.panel{padding:16px}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  .propBtn{font:600 13px 'Space Grotesk',sans-serif;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);padding:8px 16px;border-radius:999px;cursor:pointer;transition:.15s}
+  .propBtn[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .propBtn:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="eyebrow">Herramienta de transición</div>
+  <h1>Migración a la cartera de 3 fondos</h1>
+  <div class="by">por Lucía G. Regueiro</div>
+</div></header>
+
+<main>
+  <div class="hero">
+    <p>Introduce el valor de hoy de tus 5 fondos. Tres de ellos ya son los destinos finales, así que su dinero se queda; los dos Fidelity (Europe y S&amp;P 500) se traspasan y todo se reajusta al reparto 75 / 15 / 10. Todo son traspasos entre fondos: no tributan.</p>
+  </div>
+
+  <div class="panel">
+    <h2><span class="idx">01</span> Valores de hoy · tus 5 fondos</h2>
+    <p class="sub">Edita cada importe. Si el 5º no es Vanguard Small-Cap, cambia el valor a lo que corresponda.</p>
+    <div class="table-wrap"><table id="origTable"><thead><tr>
+      <th>Fondo actual</th><th>ISIN</th><th>Rol</th><th>Valor hoy €</th>
+    </tr></thead><tbody></tbody>
+    <tfoot><tr><td>Total</td><td></td><td></td><td class="n" id="totalCell">—</td></tr></tfoot></table></div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="idx">02</span> Qué hacer (agrupado por destino)</h2>
+    <p class="sub">Para cada fondo final: cuánto se queda ya en él y qué traspasos recibe. Cada línea "desde…" es una orden de traspaso.</p>
+    <div id="propSel" style="display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap">
+      <button class="propBtn" data-p="75/15/10" aria-pressed="true">75 / 15 / 10</button>
+      <button class="propBtn" data-p="65/20/15" aria-pressed="false">65 / 20 / 15</button>
+    </div>
+    <div class="grid-kpi" id="kpis"></div>
+    <div id="plan"></div>
+    <div class="close-note" id="closeNote"></div>
+    <div class="callout">Todo son traspasos entre fondos, sin peaje fiscal. Los Fidelity quedan a cero. Varias órdenes serán traspasos parciales (mover solo una parte, típicamente del S&amp;P 500).</div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="idx">03</span> Resultado final</h2>
+    <div class="table-wrap"><table id="finTable"><thead><tr>
+      <th>Fondo final</th><th>ISIN</th><th>Objetivo</th><th>Valor €</th>
+    </tr></thead><tbody></tbody></table></div>
+    <div class="chart-box"><canvas id="finChart" role="img" aria-label="Reparto final: Developed World 75%, Emerging Markets 15%, Small Caps 10%."></canvas></div>
+  </div>
+</main>
+
+<footer>
+  <div class="sig">Lucía G. Regueiro</div>
+  <p>Panel personal de transición de cartera. No constituye asesoramiento financiero. Los cálculos usan los importes que introduces y no se guardan en ningún sitio.</p>
+</footer>
+
+<script>
+"use strict";
+const MONEDA = '€';   // cambia a '$' si lo necesitas en dólares
+const eur = n => (Math.round(n*100)/100).toFixed(2) + ' ' + MONEDA;
+const COL = ['#534AB7','#D85A30','#639922']; // Dev, EM, Small
+
+// 5 fondos actuales. bucket = a qué destino alimenta (0 Dev, 1 EM, 2 Small)
+const origs = [
+  {f:"iShares Developed World (S)",  isin:"IE000ZYRH0Q7", b:0, val:242163.51},
+  {f:"iShares Emerging Markets (S)", isin:"IE000QAZP7L2", b:1, val:64591.58},
+  {f:"Fidelity MSCI Europe Index",   isin:"IE00BYX5MD61", b:0, val:60927.14},
+  {f:"Fidelity S&P 500 Index",       isin:"IE00BYX5MX67", b:0, val:47465.59},
+  {f:"Vanguard Global Small-Cap",    isin:"IE00B42W3S00", b:2, val:41917.57},
+];
+const fin = [
+  {f:"iShares Developed World (S)",  isin:"IE000ZYRH0Q7", w:75, b:0},
+  {f:"iShares Emerging Markets (S)", isin:"IE000QAZP7L2", w:15, b:1},
+  {f:"Vanguard Global Small-Cap",    isin:"IE00B42W3S00", w:10, b:2},
+];
+const PROPUESTAS = {"75/15/10":[75,15,10], "65/20/15":[65,20,15]};
+function aplicarPropuesta(clave){
+  const p=PROPUESTAS[clave]; if(!p) return;
+  fin.forEach((f,k)=>f.w=p[k]);
+  document.querySelectorAll('#propSel .propBtn').forEach(b=>b.setAttribute('aria-pressed', b.dataset.p===clave));
+  compute();
+}
+const ROL = ["→ Developed World","→ Emerging Markets","→ Small Caps"];
+
+function renderInputs(){
+  document.querySelector('#origTable tbody').innerHTML = origs.map((o,i)=>{
+    const esFinal = fin.some(f=>f.isin===o.isin);
+    return `<tr><td>${o.f}</td>
+      <td class="n" style="color:var(--ink-soft)">${o.isin}</td>
+      <td><span class="swatch" style="background:${COL[o.b]}"></span>${esFinal?'se mantiene':'se traspasa'} ${ROL[o.b]}</td>
+      <td><input class="cell" inputmode="decimal" data-i="${i}" value="${o.val}"></td></tr>`;
+  }).join('');
+  document.querySelectorAll('#origTable input.cell').forEach(inp=>inp.oninput=e=>{
+    origs[+e.target.dataset.i].val = parseFloat(e.target.value)||0; compute();
+  });
+}
+
+function compute(){
+  const total = origs.reduce((s,o)=>s+(+o.val||0),0);
+  document.getElementById('totalCell').textContent = total>0 ? eur(total) : '—';
+  const finIsin = new Set(fin.map(f=>f.isin));
+  const targetByIsin = {}; fin.forEach(f=>targetByIsin[f.isin]=f.w/100*total);
+
+  const stays = {}; fin.forEach(f=>stays[f.isin]=0);
+  const sells = [];
+  origs.forEach(o=>{
+    const v=+o.val||0;
+    if(finIsin.has(o.isin)){
+      const st=Math.min(v, targetByIsin[o.isin]);
+      stays[o.isin]+=st;
+      if(v-st>0.5) sells.push({name:o.f, isin:o.isin, b:o.b, amt:v-st});
+    } else if(v>0.5){
+      sells.push({name:o.f, isin:o.isin, b:o.b, amt:v});
+    }
+  });
+  const buys = fin.map(f=>({isin:f.isin, need:targetByIsin[f.isin]-stays[f.isin]})).filter(b=>b.need>0.5);
+  sells.sort((a,b)=>b.amt-a.amt); buys.sort((a,b)=>b.need-a.need);
+  const incoming = {}; fin.forEach(f=>incoming[f.isin]=[]);
+  const sRem=sells.map(s=>({...s})), bRem=buys.map(b=>({...b}));
+  let i=0,j=0;
+  while(i<sRem.length && j<bRem.length){
+    const amt=Math.min(sRem[i].amt, bRem[j].need);
+    incoming[bRem[j].isin].push({from:sRem[i].name, fromIsin:sRem[i].isin, b:sRem[i].b, amt});
+    sRem[i].amt-=amt; bRem[j].need-=amt;
+    if(sRem[i].amt<=0.5)i++; if(bRem[j].need<=0.5)j++;
+  }
+
+  // KPIs
+  document.getElementById('kpis').innerHTML = total>0 ? fin.map((f,k)=>`
+    <div class="kpi"><div class="k">${f.f.split(' (')[0]} · ${f.w}%</div>
+    <div class="v" style="color:${COL[k]}">${eur(targetByIsin[f.isin])}</div></div>`).join('') : '';
+
+  // Plan
+  const plan=document.getElementById('plan');
+  if(total<=0){ plan.innerHTML='<p class="sub">Introduce los valores para ver el plan.</p>'; document.getElementById('closeNote').textContent=''; renderFin(null); return; }
+  plan.innerHTML = fin.map((f,k)=>{
+    const propio = stays[f.isin];
+    const items = [];
+    if(propio>0.5) items.push(`<li class="stay"><span><span class="swatch" style="background:${COL[k]}"></span>Se queda en ${f.f} <span class="isin">${f.isin}</span></span><b>${eur(propio)}</b></li>`);
+    incoming[f.isin].forEach(inc=>items.push(
+      `<li><span><span class="swatch" style="background:${COL[inc.b]}"></span>desde ${inc.from} <span class="isin">${inc.fromIsin}</span> &rarr; <span class="isin">${f.isin}</span></span><b>${eur(inc.amt)}</b></li>`));
+    items.push(`<li class="total"><span>Total objetivo</span><b>${eur(targetByIsin[f.isin])}</b></li>`);
+    return `<div class="dest"><h3><span class="tag" style="background:${COL[k]}">${f.w}%</span> ${f.f}
+      <span class="isin">${f.isin}</span></h3><ul>${items.join('')}</ul></div>`;
+  }).join('');
+
+  const cierran = origs.filter(o=>!finIsin.has(o.isin) && (+o.val||0)>0.5).map(o=>o.f);
+  document.getElementById('closeNote').innerHTML = cierran.length
+    ? `Fondos que quedan a 0 tras la operación: <b>${cierran.join(' · ')}</b>.` : '';
+
+  renderFin(targetByIsin);
+}
+
+let finChart;
+function renderFin(targetByIsin){
+  const body=document.querySelector('#finTable tbody');
+  if(!targetByIsin){ body.innerHTML=''; if(finChart){finChart.destroy();finChart=null;} return; }
+  body.innerHTML = fin.map((f,k)=>`
+    <tr><td><span class="swatch" style="background:${COL[k]}"></span>${f.f}</td>
+    <td class="n" style="color:var(--ink-soft)">${f.isin}</td>
+    <td class="n">${f.w}%</td>
+    <td class="n">${eur(targetByIsin[f.isin])}</td></tr>`).join('');
+  const cfg={type:'bar',
+    data:{labels:fin.map(f=>f.f.split(' (')[0]),
+      datasets:[{data:fin.map(f=>Math.round(targetByIsin[f.isin])),backgroundColor:COL,borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>eur(c.parsed.y)}}},
+      scales:{y:{ticks:{callback:v=>(v/1000)+'k €'}}}}};
+  if(finChart){finChart.data=cfg.data;finChart.update();} else finChart=new Chart(document.getElementById('finChart'),cfg);
+}
+
+document.querySelectorAll('#propSel .propBtn').forEach(b=>b.onclick=()=>aplicarPropuesta(b.dataset.p));
+renderInputs(); compute();
+</script>
+</body>
+</html>
